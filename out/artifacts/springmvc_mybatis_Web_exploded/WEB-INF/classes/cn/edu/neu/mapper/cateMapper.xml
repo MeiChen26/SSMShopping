@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	namespace：必须与对应的接口全类名一致
+	id:必须与对应接口的某个对应的方法名一致
+	
+ -->
+<mapper namespace="cn.edu.neu.mapper.CateMapper">
+	<select id="findAll" resultType="Category">
+		select cate_id cateId,cate_name cateName,cate_pic catePic from t_category
+	</select>
+	<insert id="saveCate" parameterType="Category">
+	    insert into t_category values(null,#{cateName},#{catePic})
+	</insert>
+	<select id="findCateById" parameterType="int" resultType="Category">
+	    select cate_id cateId,cate_name cateName,cate_pic catePic from t_category where cate_id=#{cateId}
+	</select>
+	<update id="updateCate" parameterType="Category">
+	    update t_category set cate_name=#{cateName},cate_pic=#{catePic} where cate_id=#{cateId}
+	</update>
+	<select id="findGoodsIdByCateId" parameterType="int" resultType="Integer">
+	    select goods_id from t_goods where cate_id=#{cateId}
+	</select>
+	<delete id="delGoodsSize" >
+	    delete from r_goodssize 
+	    <if test="list!=null">
+	    where goods_id in 
+	    <foreach collection="list" item="item" open="(" close=")" separator=",">
+	        #{item}
+	    </foreach>
+	    </if>
+	</delete>
+	<delete id="delGoodsColor" >
+	    delete from r_goodscolor where goods_id in 
+	    <foreach collection="list" item="item" open="(" close=")" separator=",">
+	        #{item}
+	    </foreach>
+	</delete>
+	<delete id="delGoodsPic" >
+	    delete from t_pic where goods_id in 
+	    <foreach collection="list" item="item" open="(" close=")" separator=",">
+	        #{item}
+	    </foreach>
+	</delete>
+	<delete id="delGoods" >
+	    delete from t_goods where cate_id=#{cateId}
+	</delete>
+	<delete id="delCate" >
+	    delete from t_category where cate_id=#{cateId}
+	</delete>
+</mapper>

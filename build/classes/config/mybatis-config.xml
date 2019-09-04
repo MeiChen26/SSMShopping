@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<!-- 实体类,简称 -设置别名 -->
+	<typeAliases>
+		<typeAlias alias="User" type="cn.edu.neu.model.User" />
+		<typeAlias alias="Category" type="cn.edu.neu.model.Category" />
+		<typeAlias alias="Goods" type="cn.edu.neu.model.Goods" />
+		<typeAlias alias="Pic" type="cn.edu.neu.model.Pic" />
+		<typeAlias alias="Size" type="cn.edu.neu.model.Size" />
+		<typeAlias alias="Color" type="cn.edu.neu.model.Color" />
+		<typeAlias alias="Address" type="cn.edu.neu.model.Address" />
+		<typeAlias alias="Order" type="cn.edu.neu.model.Order" />
+		<typeAlias alias="OrderDetail" type="cn.edu.neu.model.OrderDetail" />
+		<typeAlias alias="Stock" type="cn.edu.neu.model.Stock" />
+	</typeAliases>
+
+	<plugins>  
+       <plugin interceptor="cn.edu.neu.core.common.PageInterceptor">  
+           <property name="databaseType" value="mysql"/>  
+       </plugin>  
+    </plugins>  
+	
+
+	<!-- 实体接口映射资源 -->
+	<!-- 说明：如果xxMapper.xml配置文件放在和xxMapper.java统一目录下，mappers也可以省略，因为org.mybatis.spring.mapper.MapperFactoryBean默认会去查找与xxMapper.java相同目录和名称的xxMapper.xml -->
+	<mappers>
+		<mapper resource="cn/edu/neu/mapper/userMapper.xml" />
+		<mapper resource="cn/edu/neu/mapper/cateMapper.xml" />
+		<mapper resource="cn/edu/neu/mapper/goodsMapper.xml" />
+		<mapper resource="cn/edu/neu/mapper/addressMapper.xml" />
+		<mapper resource="cn/edu/neu/mapper/orderMapper.xml" />
+		<mapper resource="cn/edu/neu/mapper/sizeMapper.xml" />
+		<mapper resource="cn/edu/neu/mapper/colorMapper.xml" />
+	</mappers>
+
+</configuration>  

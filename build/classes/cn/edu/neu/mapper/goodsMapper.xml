@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	namespace：必须与对应的接口全类名一致
+	id:必须与对应接口的某个对应的方法名一致
+	
+ -->
+<mapper namespace="cn.edu.neu.mapper.GoodsMapper">
+	<select id="findAllGoodsByCateId" parameterType="int" resultMap="GoodsResultMap">
+		select goods_id goodsId,cate_id cateId,goods_name goodsName,goods_disc goodsDisc,goods_price goodsPrice,
+		goods_discount goodsDiscount,goods_stock goodsStock,goods_origin goodsOrigin,goods_material goodsMaterial,
+		goods_postalfee goodsPostalfee,goods_date goodsDate,goods_sales goodsSales,goods_pic goodsPic 
+		from t_goods 
+		<if test="params.cateId!=null">
+			where cate_id=#{params.cateId}
+		</if>
+		<if test="params.sort!=null">
+		<choose>
+		  <when test="params.sort ==1">
+		    order by goods_discount
+		  </when>
+		  <when test="params.sort ==2">
+		    order by goods_discount desc
+		  </when>
+		  <when test="params.sort ==3">
+		    order by goods_sales desc
+		  </when>
+		  <when test="params.sort ==4">
+		    order by goods_sales 
+		  </when>
+		  <otherwise>
+		    order by goods_discount
+		  </otherwise>
+		</choose>
+		</if>
+		<if test="params.sort==null">
+		     order by goods_discount
+		</if>
+	</select>
+	<resultMap id="GoodsResultMap" type="Goods">  
+	    <id property="goodsId" column="goodsId"/>
+      	<result property="cateId" column="cateId"/>
+      	<result property="goodsName" column="goodsName"/>
+      	<result property="goodsDisc" column="goodsDisc"/>
+      	<result property="goodsPrice" column="goodsPrice"/>
+      	<result property="goodsDiscount" column="goodsDiscount"/>
+      	<result property="goodsStock" column="goodsStock"/>
+      	<result property="goodsOrigin" column="goodsOrigin"/>
+      	<result property="goodsMaterial" column="goodsMaterial"/>
+      	<result property="goodsPostalfee" column="goodsPostalfee"/>
+      	<result property="goodsDate" column="goodsDate"/>
+      	<result property="goodsSales" column="goodsSales"/>
+      	<result property="goodsPic" column="goodsPic"/>
+      	
+      	<!-- Goods与Pic一对多关系 -->
+      	<collection property="pics" ofType="Pic">
+      	    <id property="picId" column="picIds"/>
+      	    <result property="goodsId" column="goodsIds"/>
+        	<result property="picUrl" column="goodsPics"/>
+      	</collection>
+      	<!-- Goods与Size一对多关系 -->
+      	<collection property="sizes" ofType="Size">
+      	    <id property="sizeId" column="sizeId"/>
+      	    <result property="sizeName" column="sizeName"/>
+      	</collection>
+      	<!-- Goods与Color一对多关系 -->
+      	<collection property="colors" ofType="Color">
+      	    <id property="colorId" column="colorId"/>
+      	    <result property="colorName" column="colorName"/>
+      	</collection>
+      	<!-- Goods与Stock一对多关系 -->
+      	<collection property="stocks" ofType="Stock">
+      	    <id property="stockId" column="stockId"/>
+      	    <result property="sizeName" column="sizeName"/>
+      	    <result property="colorName" column="colorName"/>
+      	    <result property="stockNum" column="stockNum"/>
+      	    <result property="salesNum" column="salesNum"/>
+      	</collection>
+  	</resultMap>
+  	<select id="findNewGoods" resultType="Goods">
+		select goods_id goodsId,cate_id cateId,goods_name goodsName,goods_price goodsPrice,
+		goods_discount goodsDiscount,goods_stock goodsStock,goods_date goodsDate,goods_sales goodsSales,goods_pic goodsPic 
+		from t_goods 
+		order by goods_date desc limit 0,12
+	</select>
+	<select id="findSalesGoods" resultType="Goods">
+		select goods_id goodsId,cate_id cateId,goods_name goodsName,goods_price goodsPrice,
+		goods_discount goodsDiscount,goods_stock goodsStock,goods_date goodsDate,goods_sales goodsSales,goods_pic goodsPic 
+		from t_goods 
+		order by goods_sales desc limit 0,12
+	</select>
+	<select id="findGoodsByKeyword" resultType="Goods">
+		select goods_id goodsId,cate_id cateId,goods_name goodsName,goods_price goodsPrice,
+		goods_discount goodsDiscount,goods_stock goodsStock,goods_date goodsDate,goods_sales goodsSales,goods_pic goodsPic
+		from t_goods 
+		<where>	    
+		    <foreach item="item" index="index" collection="params.keywords"  >
+		       and goods_name like CONCAT(CONCAT('%', #{params.keywords[${index}]}), '%') 
+		    </foreach>
+	    </where>
+	    <if test="params.sort!=null">
+		<choose>
+		  <when test="params.sort ==1">
+		    order by goods_discount
+		  </when>
+		  <when test="params.sort ==2">
+		    order by goods_discount desc
+		  </when>
+		  <when test="params.sort ==3">
+		    order by goods_sales desc
+		  </when>
+		  <when test="params.sort ==4">
+		    order by goods_sales 
+		  </when>
+		  <otherwise>
+		    order by goods_discount
+		  </otherwise>
+		</choose>
+		</if>
+		<if test="params.sort==null">
+		     order by goods_discount
+		</if>
+	</select>
+	
+	<select id="findGoodsDetailById" parameterType="int" resultMap="GoodsResultMap">
+		select g.goods_id goodsId,cate_id cateId,goods_name goodsName,goods_disc goodsDisc,goods_price goodsPrice,
+		goods_discount goodsDiscount,goods_stock goodsStock,goods_origin goodsOrigin,goods_material goodsMaterial,
+		goods_postalfee goodsPostalfee,goods_date goodsDate,goods_sales goodsSales,p.pic_url goodsPics,p.pic_id picIds		
+		from t_goods g left join t_pic p 
+		on g.goods_id=p.goods_id 
+		where g.goods_id=#{goodsId}
+	</select>
+	<select id="findGoodsSizesById" parameterType="int" resultMap="GoodsResultMap">
+	    select g.goods_id goodsId,s.size_id sizeId,s.size_name sizeName
+	    from t_goods g 
+	    left join r_goodssize gs on g.goods_id=gs.goods_id
+		left join t_size s on gs.size_id=s.size_id
+		where g.goods_id=#{goodsId}
+	</select>
+	<select id="findGoodsColorsById" parameterType="int" resultMap="GoodsResultMap">
+	    select g.goods_id goodsId,c.color_id colorId,c.color_name colorName
+	    from t_goods g
+		left join r_goodscolor gc on g.goods_id=gc.goods_id
+		left join t_color c on gc.color_id=c.color_id
+		where g.goods_id=#{goodsId}
+	</select>
+	
+	<!--Admin-->
+	<select id="findGoodsBySearchKeyword" resultMap="GoodsResultMap">
+		select g.goods_id goodsId,cate_id cateId,goods_name goodsName,goods_disc goodsDisc,goods_price goodsPrice,
+		goods_discount goodsDiscount,goods_stock goodsStock,goods_origin goodsOrigin,goods_material goodsMaterial,
+		goods_postalfee goodsPostalfee,goods_date goodsDate,goods_sales goodsSales,goods_pic goodsPic
+		from t_goods g 
+		<where>	    		    
+			
+			  <if test="params.cateId!=0 and params.cateId!=null">
+			    cate_id=#{params.cateId} 
+			  </if>
+			  <if test="params.goodsNames!=null ">
+			   <foreach item="item" index="index" collection="params.goodsNames"  >
+		        and goods_name like CONCAT(CONCAT('%', #{params.goodsNames[${index}]}), '%') 
+		      </foreach>
+		      </if>
+			  <if test="params.startPrice!=null and params.startPrice!=''">
+			    and goods_price &gt;= #{params.startPrice} 
+			  </if>
+			  <if test="params.endPrice!=null and params.endPrice!=''">
+			    and goods_price &lt;= #{params.endPrice} 
+			  </if>
+			
+			
+	    </where>
+		<if test="params.sort!=null">
+			<choose>
+			  <when test="params.sort ==1">
+			    order by goods_price
+			  </when>
+			  <when test="params.sort ==2">
+			    order by goods_price desc
+			  </when>
+			  <when test="params.sort ==3">
+			    order by goods_sales desc
+			  </when>
+			  <when test="params.sort ==4">
+			    order by goods_sales 
+			  </when>
+			  <otherwise>
+			    order by g.goods_id desc
+			  </otherwise>
+			</choose>
+		</if>
+		<if test="params.sort==null">
+		     order by  g.goods_id desc
+		</if>
+	</select>
+	
+	<insert id="saveGoods" parameterType="Goods">
+	    insert into t_goods values(null,#{cateId},#{goodsName},#{goodsDisc},#{goodsPrice},#{goodsDiscount},
+	    #{goodsStock},#{goodsOrigin},#{goodsMaterial},#{goodsPostalfee},#{goodsDate},#{goodsSales},#{goodsPic})
+	</insert>
+	<select id="findGoodsById" parameterType="int" resultType="Goods">
+	    select goods_id goodsId,cate_id cateId,goods_name goodsName,goods_disc goodsDisc,goods_price goodsPrice,
+	    goods_discount goodsDiscount,goods_stock goodsStock,goods_origin goodsOrigin,goods_material goodsMaterial,
+	    goods_postalfee goodsPostalfee,goods_date goodsDate,goods_sales goodsSales,goods_pic goodsPic
+	    from t_goods where goods_id=#{goodsId}
+	</select>
+	<update id="updateGoods" parameterType="Goods">
+	    update t_goods set cate_id=#{cateId},goods_name=#{goodsName},goods_disc=#{goodsDisc},goods_price=#{goodsPrice},
+	    goods_discount=#{goodsDiscount},goods_stock=#{goodsStock},goods_origin=#{goodsOrigin},goods_material=#{goodsMaterial},
+	    goods_postalfee=#{goodsPostalfee},goods_date=#{goodsDate},goods_sales=#{goodsSales},goods_pic=#{goodsPic} 
+	    where goods_id=#{goodsId}
+	</update>
+
+	<delete id="delGoodsSize" >
+	    delete from r_goodssize where goods_id = #{goodsId}  
+	</delete>
+	<delete id="delGoodsColor" >
+	    delete from r_goodscolor where goods_id = #{goodsId}
+	</delete>
+	<delete id="delGoodsPic" >
+	    delete from t_pic where goods_id = #{goodsId}
+	</delete>
+	<delete id="delGoods" >
+	    delete from t_goods where goods_id=#{goodsId}
+	</delete>
+	<insert id="saveGoodsPics">
+		insert into t_pic values(null,#{goodsId},#{goodsPic})
+	</insert>
+	<delete id="delGoodsPicById" parameterType="int">
+	    delete from t_pic where pic_id=#{picId} 
+	</delete>
+	<delete id="delGoodsSizes" parameterType="int">
+	    delete from r_goodssize where goods_id=#{0} and size_id=#{1}
+	</delete>
+	<insert id="saveGoodsSizes" >
+	    insert into r_goodssize values(#{0},#{1})
+	</insert>
+	<delete id="delGoodsColors" parameterType="int">
+	    delete from r_goodscolor where goods_id=#{0} and color_id=#{1}
+	</delete>
+	<insert id="saveGoodsColors" >
+	    insert into r_goodscolor values(#{0},#{1})
+	</insert>
+	<select id="findGoodsStocksByGoodsId" parameterType="int" resultType="Stock">
+	    select stock_id stockId,t.goods_id goodsId,t.color_id colorId,t.size_id sizeId,stock_num stockNum,sales_num salesNum,
+	    goods_name goodsName,size_name sizeName,color_name colorName
+	    from t_stock t join t_goods g on t.goods_id=g.goods_id
+	    where t.goods_id=#{goodsId}
+	</select>
+	<update id="updateGoodsStockById">
+	    update t_stock set stock_num=#{3} where goods_id=#{0} and size_id=#{1} and color_id=#{2}
+	</update>
+	<select id="findGoodsSizeIds" resultType="String">
+	    select size_id from r_goodssize where goods_id=#{goodsId}
+	</select>
+	<select id="findGoodsColorIds" resultType="String">
+	    select color_id from r_goodscolor where goods_id=#{goodsId}
+	</select>
+</mapper>

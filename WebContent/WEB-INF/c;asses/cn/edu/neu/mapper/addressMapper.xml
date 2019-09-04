@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	namespace：必须与对应的接口全类名一致
+	id:必须与对应接口的某个对应的方法名一致
+	
+ -->
+<mapper namespace="cn.edu.neu.mapper.AddressMapper">
+	<select id="findAddrByUserId" resultType="Address">
+		select addr_id addrId,addr_province addrProvince,addr_city addrCity,addr_area addrArea,addr_content addrContent,
+		addr_receiver addrReceiver,addr_tel addrTel,addr_isdefault addrIsdefault from t_address
+		where user_id=#{loginUserId}
+	</select>
+	<insert id="saveAddress" parameterType="Address">
+	    insert into t_address values(null,#{userId},#{addrProvince},#{addrCity},#{addrArea},#{addrContent},
+	    #{addrReceiver},#{addrTel},0)
+	</insert>
+	<update id="updateAddress" parameterType="Address">
+	    update t_address set addr_province=#{addrProvince},addr_city=#{addrCity},addr_area=#{addrArea},
+	    addr_content=#{addrContent},addr_receiver=#{addrReceiver},addr_tel=#{addrTel} 
+	    where addr_id=#{addrId}
+	</update>
+	<delete id="delAddress" parameterType="int">
+	    delete from t_address where addr_id=#{addrId}
+	</delete>
+	<update id="unsetDefaultAddress" parameterType="int">
+	    update t_address set addr_isdefault=0 where user_id=#{userId}
+	</update>
+	<update id="setDefaultAddress" parameterType="int">
+	    update t_address set addr_isdefault=1 where addr_id=#{addrId}
+	</update>
+	<select id="findAddressById" parameterType="int" resultType="Address">
+	    select addr_id addrId,addr_province addrProvince,addr_city addrCity,addr_area addrArea,addr_content addrContent,
+		addr_receiver addrReceiver,addr_tel addrTel,addr_isdefault addrIsdefault from t_address
+		where addr_id=#{addrId}
+	</select>
+</mapper>

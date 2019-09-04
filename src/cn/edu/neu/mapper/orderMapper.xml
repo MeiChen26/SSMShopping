@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	namespace：必须与对应的接口全类名一致
+	id:必须与对应接口的某个对应的方法名一致
+	
+ -->
+<mapper namespace="cn.edu.neu.mapper.OrderMapper">
+    <insert id="saveOrder" parameterType="Order" > 
+        <!-- mysql插入数据后，获取id，将新插入记录的id值 放入User对象id属性中-->
+        <selectKey keyProperty="orderId" resultType="int" order="AFTER" >
+        	select last_insert_id()  as orderId
+        </selectKey>      
+		insert into t_order values(null,#{orderCode},#{userId},
+		0,#{orderAddress},#{orderPostalfee},curdate(),'','')
+	</insert>
+	
+     <insert id="saveOrderDetail" > 
+		insert into t_orderdetail values(null,#{orderId},#{goodsId},#{odetailName},#{odetailSize},#{odetailColor},#{odetailPrice},
+		#{odetailNum},#{odetailPic})
+	</insert>
+	
+    <select id="findMyOrders"  resultMap="OrderResultMap">
+		select o.order_id orderId,order_code orderCode,user_id userId,order_status orderStatus,
+		order_address orderAddress,order_postalfee orderPostalfee,order_date orderDate,
+		order_postcode orderPostcode,order_postname orderPostname,
+		odetail_id odetailId,goods_id goodsId,odetail_name odetailName,odetail_size odetailSize,
+		odetail_color odetailColor,odetail_price odetailPrice,odetail_num odetailNum,odetail_pic odetailPic 
+		from t_order o join t_orderdetail od
+		on o.order_id=od.order_id
+		where user_id=#{params.userId} 
+		<if test="params.status!=null">
+		    and order_status=#{params.status}
+		</if>
+		order by order_code desc
+		
+	</select>
+	<resultMap id="OrderResultMap" type="Order">  
+	    <id property="orderId" column="orderId"/>
+      	<result property="orderCode" column="orderCode"/>
+      	<result property="userId" column="userId"/>
+      	<result property="orderStatus" column="orderStatus"/>
+      	<result property="orderAddress" column="orderAddress"/>
+      	<result property="orderPostalfee" column="orderPostalfee"/>
+      	<result property="orderDate" column="orderDate"/>
+      	<result property="orderPostcode" column="orderPostcode"/>
+      	<result property="orderPostname" column="orderPostname"/>
+      	<result property="userName" column="userName"/>
+      	
+		<!-- Order与OrderDetail一对多关系 -->
+      	<collection property="odetails" ofType="OrderDetail">
+      	    <id property="odetailId" column="odetailId"/>
+      	    <result property="goodsId" column="goodsId"/>
+        	<result property="odetailName" column="odetailName"/>
+        	<result property="odetailSize" column="odetailSize"/>
+        	<result property="odetailSizeId" column="odetailSizeId"/>
+        	<result property="odetailColor" column="odetailColor"/>
+        	<result property="odetailColorId" column="odetailColorId"/>
+        	<result property="odetailPrice" column="odetailPrice"/>
+        	<result property="odetailNum" column="odetailNum"/>
+        	<result property="odetailPic" column="odetailPic"/>
+      	</collection>
+
+	</resultMap>
+	
+	<delete id="delOrderDetail" parameterType="int">
+	    delete from t_orderdetail where order_id=#{orderId}
+	</delete>
+	<delete id="delOrder" parameterType="int">
+	    delete from t_order where order_id=#{orderId}
+	</delete>
+	
+	<update id="updateOrderStatus" >
+	    update t_order set order_status=#{1} where order_id=#{0}
+	</update>
+	
+	<select id="findOrderStatusById" parameterType="int" resultType="int">
+	    select order_status from t_order where order_id=#{orderId}
+	    
+	</select>
+	<select id="findOrderDetailById" parameterType="int" resultMap="OrderResultMap">
+	    select o.order_id orderId,order_code orderCode,user_id userId,order_status orderStatus,
+		order_address orderAddress,order_postalfee orderPostalfee,order_date orderDate,
+		order_postcode orderPostcode,order_postname orderPostname,
+		odetail_id odetailId,goods_id goodsId,odetail_name odetailName,odetail_size odetailSize,
+		odetail_color odetailColor,odetail_price odetailPrice,odetail_num odetailNum,odetail_pic odetailPic 
+		from t_order o join t_orderdetail od
+		on o.order_id=od.order_id
+		where o.order_id=#{orderId} order by odetail_id
+	</select>
+	
+	<!-- Admin -->
+	<select id="findOrders"  resultMap="OrderResultMap">
+		select o.order_id orderId,order_code orderCode,o.user_id userId,order_status orderStatus,
+		order_address orderAddress,order_postalfee orderPostalfee,order_date orderDate,
+		order_postcode orderPostcode,order_postname orderPostname,u.user_name userName
+		from t_order o join t_user u
+		on o.user_id=u.user_id
+		<where>
+			<if test="params.orderCode!=null and params.orderCode!=''">
+			    order_code=#{params.orderCode}
+			</if> 
+			<if test="params.userName!=null and params.userName!=''">
+			    and user_name like CONCAT(CONCAT('%', #{params.userName}), '%') 
+			</if> 
+			<if test="params.orderStatus!=null and params.orderStatus!=-1">
+			    and order_status=#{params.orderStatus}
+			</if>
+			<if test="params.startDate!=null and params.startDate!=''">
+			    and order_date &gt;= #{params.startDate}
+			</if>
+			<if test="params.endDate!=null and params.endDate!=''">
+			    and order_date &lt;= #{params.endDate}
+			</if>
+		</where>
+		<if test="params.sort!=null">
+			<choose>
+			  <when test="params.sort ==1">
+			    order by order_date desc
+			  </when>
+			  <when test="params.sort ==2">
+			    order by order_status 
+			  </when>
+			  <when test="params.sort ==3">
+			    order by user_name 
+			  </when>
+			  <otherwise>
+			    order by order_code desc
+			  </otherwise>
+			</choose>
+		</if>
+		<if test="params.sort==null">
+		     order by order_code desc
+		</if>
+		
+	</select>
+	<update id="updateOrderPostInfo">
+	    update t_order set order_postname=#{1},order_postcode=#{2},order_status=#{3} where order_id=#{0}
+	</update>
+	<select id="findOrderStatusByIds" resultType="Integer">
+	    select order_status from t_order where order_id in
+	    <foreach collection="array" item="item" open="(" close=")" separator=",">
+	        #{item}
+	    </foreach>
+	</select>
+</mapper>
